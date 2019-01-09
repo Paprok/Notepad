@@ -27,3 +27,7 @@ body{
 .note .bar:hover{
     cursor: move;
 }
+
+.note:hover{
+    z-index: 1;
+}
