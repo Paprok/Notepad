@@ -1,71 +1,61 @@
 'use strict';
+let noteIndex = 0;
 
-var draggedEl,
-    onDragStart,
-    onDrag,
-    onDragEnd,
+
+let draggedEl,
     grabPointX,
-    grabPointY,
-    createNote;
+    grabPointY;
 
-onDragStart = function (ev) {
-    var boundingClientRect;
-    if(ev.target.className.indexOf('bar') === -1){
-        return;
+function onDragStart(ev) {
+    if(ev.target.classList.contains('bar')){
+        
+        draggedEl = this;
+        let boundingClientRect = draggedEl.getBoundingClientRect();
+        grabPointX = boundingClientRect.left - ev.clientX - 100;
+        grabPointY = boundingClientRect.top - ev.clientY - 200;
+        document.addEventListener('mousemove', onDrag, false);
+        document.addEventListener('mouseup', onDragEnd, false);
     } 
-    draggedEl = this;
-    boundingClientRect = draggedEl.getBoundingClientRect();
+}
 
-    grabPointX = boundingClientRect.left - ev.clientX - 100;
-    grabPointY = boundingClientRect.top - ev.clientY - 200;
-
-};
-
-onDrag = function(ev) {
-    if(!draggedEl){
-        return;
-    }
-    var posX = ev.clientX + grabPointX;
-    var posY = ev.clientY + grabPointY;
-
+function onDrag(ev) {
+    let posX = ev.clientX + grabPointX;
+    let posY = ev.clientY + grabPointY;
     if(posX<0){
         posX = 0;
     }
     if(posY<-100){
         posY = -100;
     }
-
     draggedEl.style.transform = "translateX(" + posX + "px) translateY(" + posY + "px)";
-};
+}
 
-onDragEnd = function(){
-    draggedEl = null;
-    grabPointX = null;
-    grabPointY = null;
-};
+function onDragEnd(){
+    document.removeEventListener('mousemove', onDrag, false);
+    document.removeEventListener('mouseup', onDragEnd, false);
+}
 
-createNote = function(){
-    var noteElement = document.createElement('div');
-    var barElement = document.createElement('div');
-    var textElement = document.createElement('textarea');
+function createNote() {
+    let textElement = document.createElement('textarea');
     textElement.appendChild(document.createTextNode('text here'));
+    
     let barText = document.createTextNode('title here');
     
+    let barElement = document.createElement('div');
     barElement.appendChild(barText);
     barElement.setAttribute('contenteditable', 'true')
-    noteElement.classList.add('note');
     barElement.classList.add('bar');
-
+    
+    let noteElement = document.createElement('div');
+    noteElement.classList.add('note');
     noteElement.appendChild(barElement);
     noteElement.appendChild(textElement);
-
     noteElement.addEventListener('mousedown', onDragStart, false);
-    
+    noteElement.setAttribute('id', (noteIndex + ''));
+    noteIndex++;
 
     document.body.appendChild(noteElement);
-};
+}
 
 createNote();
-document.addEventListener('mousemove', onDrag, false);
-document.addEventListener('mouseup', onDragEnd, false);
 document.getElementById('createNote').addEventListener('dblclick', createNote, false);
