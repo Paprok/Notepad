@@ -1,53 +1,78 @@
 'use strict';
-let noteIndex = 0;
-
 
 let draggedEl,
     grabPointX,
     grabPointY;
 
 function createNote(loadedNote) {
+    let { noteText, noteTitle } = setTextAndTitle(loadedNote);
+    let deleteButton = createDeleteButton();
+    let textElement = createTextField(noteText);
+    let barElement = createBar(noteTitle, deleteButton);
+    let noteElement = createNoteDiv(barElement, textElement);
+    save(noteTitle, noteText, noteIndex);
+    addNoteListeners(deleteButton, noteElement);
+    document.body.appendChild(noteElement);
+    noteIndex++;
+}
+
+function addNoteListeners(deleteButton, noteElement) {
+    deleteButton.addEventListener('click', deleteNote, false);
+    noteElement.addEventListener('mousedown', onDragStart, false);
+    noteElement.addEventListener('focusout', saveNote, true);
+}
+
+function setTextAndTitle(loadedNote) {
     let noteText;
     let noteTitle;
-    if(loadedNote.title){
+    if (loadedNote.title) {
         noteText = loadedNote.text;
         noteTitle = loadedNote.title;
         noteIndex = parseInt(loadedNote.id);
-        
-    } else {
-        noteText = 'Note text here';
-        noteTitle = 'Note title here';    
     }
+    else {
+        noteText = 'Note text here';
+        noteTitle = 'Note title here';
+    }
+    return { noteText, noteTitle };
+}
+
+function createDeleteButton() {
     let deleteButtonImage = document.createElement('img');
     deleteButtonImage.setAttribute('src', '/img/close.png');
     deleteButtonImage.setAttribute('type', 'submit');
     let deleteButton = document.createElement('button');
     deleteButton.appendChild(deleteButtonImage);
-    deleteButton.addEventListener('click', deleteNote, false);
     deleteButton.classList.add('delete');
     deleteButton.setAttribute('contenteditable', 'false');
+    return deleteButton;
+}
+
+function createTextField(noteText) {
     let textElement = document.createElement('textarea');
     textElement.appendChild(document.createTextNode(noteText));
+    return textElement;
+}
+
+function createBar(noteTitle, deleteButton) {
     let barText = document.createTextNode(noteTitle);
     let barField = document.createElement('div');
-    barField.appendChild(barText); 
+    barField.appendChild(barText);
     barField.setAttribute('contenteditable', 'true');
     let barElement = document.createElement('div');
     barElement.appendChild(barField);
     barElement.appendChild(deleteButton);
     barElement.classList.add('bar');
+    return barElement;
+}
+
+function createNoteDiv(barElement, textElement) {
     let noteElement = document.createElement('div');
     noteElement.classList.add('note');
     noteElement.appendChild(barElement);
     noteElement.appendChild(textElement);
     noteElement.setAttribute('id', (noteIndex + ''));
-    save(noteTitle, noteText, noteIndex);
-    noteIndex++;
-    
-    noteElement.addEventListener('mousedown', onDragStart, false);
-    noteElement.addEventListener('focusout', saveNote, true);
-    
-    document.body.appendChild(noteElement);
+    return noteElement;
 }
 
 function onDragStart(ev) {
@@ -135,6 +160,6 @@ function deleteOldNotes(last, length){
     }
 }
 
-// createNote();
+let noteIndex = 0;
 loadNotes();
 document.getElementById('createNote').addEventListener('dblclick', createNote, false);
